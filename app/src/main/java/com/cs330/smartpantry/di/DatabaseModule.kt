@@ -4,11 +4,14 @@ import android.content.Context
 import androidx.room.Room
 import com.cs330.smartpantry.data.local.AppDatabase
 import com.cs330.smartpantry.data.local.PantryDAO
+import com.cs330.smartpantry.data.remote.MealApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -27,5 +30,20 @@ object DatabaseModule {
     @Provides
     fun providePantryDao(database: AppDatabase): PantryDAO{
         return database.pantryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(): Retrofit{
+        return Retrofit.Builder()
+            .baseUrl(MealApi.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMealApi(retrofit: Retrofit): MealApi{
+        return retrofit.create(MealApi::class.java)
     }
 }
