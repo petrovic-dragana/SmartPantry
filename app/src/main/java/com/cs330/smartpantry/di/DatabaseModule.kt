@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.cs330.smartpantry.data.local.AppDatabase
 import com.cs330.smartpantry.data.local.PantryDAO
 import com.cs330.smartpantry.data.remote.MealApi
+import com.cs330.smartpantry.data.repository.PantryRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,5 +46,11 @@ object DatabaseModule {
     @Singleton
     fun provideMealApi(retrofit: Retrofit): MealApi{
         return retrofit.create(MealApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRepository(pantryDAO: PantryDAO, mealApi: MealApi): PantryRepository{
+        return PantryRepository(pantryDAO, mealApi)
     }
 }
