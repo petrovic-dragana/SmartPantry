@@ -28,7 +28,7 @@ class PantryRepository @Inject constructor(
     }
 
     //ROOM: CRUD operacije
-    suspend fun addIngredients(ingredient: Ingredient){
+    suspend fun addIngredient(ingredient: Ingredient){
         pantryDAO.insertIngredient(ingredient)
     }
     suspend fun removeIngredient(ingredient: Ingredient){

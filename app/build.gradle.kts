@@ -78,3 +78,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.androidx.ui.tooling)
 }
+kapt{
+    correctErrorTypes = true
+}
