@@ -1,5 +1,6 @@
 package com.cs330.smartpantry.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +27,8 @@ import coil.compose.AsyncImage
 
 @Composable
 fun RecipeScreen(
-    viewModel: RecipeViewModel = hiltViewModel()
+    viewModel: RecipeViewModel = hiltViewModel(),
+    onRecipeClick: (String) -> Unit // Dodaj ovaj callback
 ) {
     val recipes by viewModel.recipes.collectAsState()
     var query by remember { mutableStateOf("") }
@@ -40,7 +42,12 @@ fun RecipeScreen(
 
         LazyColumn {
             items(recipes){meal ->
-                Card(modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth()) {
+                Card(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxWidth()
+                        .clickable{onRecipeClick(meal.idMeal)}
+                ){
                     Row (verticalAlignment = Alignment.CenterVertically){
                         AsyncImage(
                             model = meal.strMealThumb,
@@ -49,6 +56,8 @@ fun RecipeScreen(
                         )
                         Text(meal.strMeal, modifier = Modifier.padding(16.dp))
                     }
+
+
                 }
             }
         }

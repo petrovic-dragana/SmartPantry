@@ -12,4 +12,6 @@ interface MealApi {
     companion object {
         const val BASE_URL = "https://www.themealdb.com/api/json/v1/1/"
     }
+    @GET("lookup.php")
+    suspend fun getFullRecipeDetails(@Query("i") id: String): MealResponse
 }

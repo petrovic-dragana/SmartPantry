@@ -72,6 +72,15 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
+    // Navigacija za Jetpack Compose
+    val nav_version = "2.8.5" // Najnovija stabilna verzija
+    implementation("androidx.navigation:navigation-compose:$nav_version")
+
+    // Za Hilt podršku unutar navigacije (ako već nisi dodala)
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    // Za ikonice koje smo koristili (Favorite, List, Search)
+    implementation("androidx.compose.material:material-icons-extended")
     // Testiranje
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
