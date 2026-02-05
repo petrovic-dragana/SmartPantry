@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cs330.smartpantry.data.repository.PantryRepository
 import com.cs330.smartpantry.model.Ingredient
+import com.cs330.smartpantry.model.Recipe
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +16,6 @@ import javax.inject.Inject
 class PantryViewModel @Inject constructor(
     private val repository: PantryRepository
 ) : ViewModel() {
-    //Prikazujemo listu namirnica kao Flow koji Compose moze da posmatra
     val ingredients: StateFlow<List<Ingredient>> = repository.allIngredients
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     fun addIngredient(name: String, quantity: Double, unit: String){
@@ -28,6 +28,11 @@ class PantryViewModel @Inject constructor(
             repository.removeIngredient(ingredient)
         }
     }
-
-
+    val favoriteRecipes: StateFlow<List<Recipe>> = repository.favoriteRecipes
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    fun removeFromFavorites(recipe: Recipe) {
+        viewModelScope.launch {
+            repository.removeRecipe(recipe) // Dodaj ovu metodu u repository ako je nemaš
+        }
+    }
 }

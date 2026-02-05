@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "recipes")
 data class Recipe(
-    @PrimaryKey val id: Int, // Koristićemo ID sa API-ja
+    @PrimaryKey val id: String, // Koristićemo ID sa API-ja
     val title: String,
     val imageUrl: String,
     val summary: String,

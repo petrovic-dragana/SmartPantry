@@ -20,9 +20,18 @@ interface PantryDAO {
     @Delete
     suspend fun deleteIngredient(ingredient: Ingredient)
 
-    @Query("SELECT * FROM recipes WHERE  isFavorite = 1")
+    @Query("SELECT * FROM recipes")
     fun getFavoriteRecipes(): Flow<List<Recipe>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecipe(recipe: Recipe)
+
+    @Query("DELETE FROM recipes WHERE id = :recipeId")
+    suspend fun deleteRecipeById(recipeId: String)
+
+    @Query("SELECT * FROM recipes WHERE isFavorite = 1")
+    suspend fun getFavoriteRecipesOnce(): List<Recipe>
+
+    @Delete
+    suspend fun deleteRecipe(recipe: Recipe)
 }

@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cs330.smartpantry.ui.screens.FavoritesScreen
 import com.cs330.smartpantry.ui.screens.PantryScreen
 import com.cs330.smartpantry.ui.screens.RecipeDetailScreen
 import com.cs330.smartpantry.ui.screens.RecipeScreen
@@ -60,7 +61,7 @@ fun MainScreen() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
 
-                val items = listOf(Screen.Pantry, Screen.Recipes)//, Screen.Favorites)
+                val items = listOf(Screen.Pantry, Screen.Recipes, Screen.Favorite)
 
                 items.forEach { screen ->
                     NavigationBarItem(
@@ -81,13 +82,19 @@ fun MainScreen() {
     ) { innerPadding ->
         NavHost(navController, startDestination = Screen.Pantry.route, Modifier.padding(innerPadding)) {
             composable(Screen.Pantry.route) { PantryScreen() }
+
             composable(Screen.Recipes.route) {
-                // Prosleđujemo navController da bismo mogli da kliknemo na recept
                 RecipeScreen(onRecipeClick = { mealId ->
                     navController.navigate(Screen.Details.createRoute(mealId))
                 })
             }
-            // composable(Screen.Favorites.route) { /* Ovde ćemo kasnije FavoritesScreen */ }
+            composable(Screen.Favorite.route) {
+                FavoritesScreen(
+                    onRecipeClick = { mealId ->
+                        navController.navigate("recipe_details/$mealId")
+                    }
+                )
+            }
             composable(
                 route = Screen.Details.route,
                 arguments = listOf(navArgument("mealId") { type = NavType.StringType })
