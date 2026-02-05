@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.cs330.smartpantry.ui.screens.PantryScreen
+import com.cs330.smartpantry.ui.screens.RecipeScreen
 import com.cs330.smartpantry.ui.theme.SmartPantryTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -23,7 +24,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ){
-                    PantryScreen()
+                    //PantryScreen()
+                    RecipeScreen()
                 }
             }
         }
