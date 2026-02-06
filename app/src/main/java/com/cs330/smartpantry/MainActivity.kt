@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cs330.smartpantry.ui.screens.AboutScreen
 import com.cs330.smartpantry.ui.screens.FavoritesScreen
 import com.cs330.smartpantry.ui.screens.PantryScreen
 import com.cs330.smartpantry.ui.screens.RecipeDetailScreen
@@ -61,7 +62,7 @@ fun MainScreen() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
 
-                val items = listOf(Screen.Pantry, Screen.Recipes, Screen.Favorite)
+                val items = listOf(Screen.Pantry, Screen.Recipes, Screen.Favorite, Screen.About)
 
                 items.forEach { screen ->
                     NavigationBarItem(
@@ -101,6 +102,9 @@ fun MainScreen() {
             ) { backStackEntry ->
                 val mealId = backStackEntry.arguments?.getString("mealId") ?: ""
                 RecipeDetailScreen(mealId = mealId)
+            }
+            composable(Screen.About.route) {
+                AboutScreen()
             }
         }
     }
