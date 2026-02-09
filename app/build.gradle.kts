@@ -86,6 +86,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.androidx.ui.tooling)
+
+    implementation("io.coil-kt:coil-compose:2.5.0")
 }
 kapt{
     correctErrorTypes = true

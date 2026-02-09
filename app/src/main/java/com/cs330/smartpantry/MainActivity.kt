@@ -16,6 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -26,9 +28,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cs330.smartpantry.ui.screens.AboutScreen
 import com.cs330.smartpantry.ui.screens.FavoritesScreen
+import com.cs330.smartpantry.ui.screens.HomeScreen
 import com.cs330.smartpantry.ui.screens.PantryScreen
 import com.cs330.smartpantry.ui.screens.RecipeDetailScreen
 import com.cs330.smartpantry.ui.screens.RecipeScreen
+import com.cs330.smartpantry.ui.screens.RecipeViewModel
 import com.cs330.smartpantry.ui.screens.Screen
 import com.cs330.smartpantry.ui.theme.SmartPantryTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -62,7 +66,12 @@ fun MainScreen() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
 
-                val items = listOf(Screen.Pantry, Screen.Recipes, Screen.Favorite, Screen.About)
+                val items = listOf(
+                    Screen.Home,
+                    Screen.Pantry,
+                    Screen.Recipes,
+                    Screen.Favorite,
+                    Screen.About)
 
                 items.forEach { screen ->
                     NavigationBarItem(
@@ -81,7 +90,17 @@ fun MainScreen() {
             }
         }
     ) { innerPadding ->
-        NavHost(navController, startDestination = Screen.Pantry.route, Modifier.padding(innerPadding)) {
+        NavHost(navController, startDestination = Screen.Home.route, Modifier.padding(innerPadding)) {
+            composable(Screen.Home.route){
+                val recipeViewModel: RecipeViewModel = hiltViewModel()
+                val pantryRecipes by recipeViewModel.pantryMatchRecipes.collectAsStateWithLifecycle()
+                HomeScreen(
+                    onRecipeClick = { id ->
+                        navController.navigate(Screen.Details.createRoute(id))
+                    },
+                    pantryRecipes = pantryRecipes
+                )
+            }
             composable(Screen.Pantry.route) { PantryScreen() }
 
             composable(Screen.Recipes.route) {

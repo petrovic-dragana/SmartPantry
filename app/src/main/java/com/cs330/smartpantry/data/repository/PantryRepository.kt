@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class PantryRepository @Inject constructor(
     private  val pantryDAO: PantryDAO,
-    private val mealApi: MealApi
+    private val mealApi: MealApi,
 ){
     //ROOM: Dobijanje svih namirnica iz baze kao Flow
     val allIngredients: Flow<List<Ingredient>> = pantryDAO.getAllIngredients()
@@ -28,6 +28,31 @@ class PantryRepository @Inject constructor(
         }
     }
 
+    fun getIngredientsFromPantry() = pantryDAO.getAllIngredients()
+    suspend fun getMealsByIngredient(ingredient: String): List<Recipe>{
+        return try {
+            val response = mealApi.getMealsByIngredient(ingredient)
+            response.meals?.map {mealDto ->
+                Recipe(
+                    id = mealDto.idMeal,
+                    title = mealDto.strMeal,
+                    imageUrl = mealDto.strMealThumb,
+                    summary = "",
+                    isFavorite = false
+                )
+            }?: emptyList()
+        }catch (e: Exception){
+            emptyList()
+        }
+    }
+    fun  getIngredients(): Flow<List<Ingredient>>{
+        return pantryDAO.getAllIngredients()
+    }
+    fun getIngredientsNames(): Flow<List<String>>{
+        return pantryDAO.getAllIngredients().map { list ->
+            list.map { it.name }
+        }
+    }
     //ROOM: CRUD operacije
     suspend fun addIngredient(ingredient: Ingredient){
         pantryDAO.insertIngredient(ingredient)

@@ -32,7 +32,7 @@ class PantryViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     fun removeFromFavorites(recipe: Recipe) {
         viewModelScope.launch {
-            repository.removeRecipe(recipe) // Dodaj ovu metodu u repository ako je nemaš
+            repository.removeRecipe(recipe)
         }
     }
 }

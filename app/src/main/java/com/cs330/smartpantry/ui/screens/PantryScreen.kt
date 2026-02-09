@@ -1,60 +1,44 @@
 package com.cs330.smartpantry.ui.screens
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 
-
-val quickIngredients = listOf(
-    // Povrće
-    "Tomato", "Potato", "Onion", "Garlic", "Carrot", "Broccoli", "Cucumber",
-    // Voće
-    "Apple", "Banana", "Lemon", "Orange", "Strawberry",
-    // Proteini & Mlečno
-    "Chicken", "Beef", "Eggs", "Milk", "Cheese", "Butter",
-    // Ostalo
-    "Rice", "Pasta", "Flour", "Sugar", "Oil"
+// 1. MAPE NAMIRNICA (Van Composable-a)
+val categories = mapOf(
+    "Vegetables" to listOf("Tomato", "Potato", "Onion", "Garlic", "Carrot", "Broccoli", "Cucumber"),
+    "Fruit" to listOf("Apple", "Banana", "Lemon", "Orange", "Strawberry"),
+    "Meat" to listOf("Chicken", "Beef", "Pork", "Bacon"),
+    "Dairy" to listOf("Milk", "Cheese", "Butter", "Yogurt"),
+    "Pantry" to listOf("Rice", "Pasta", "Flour", "Sugar", "Oil")
 )
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()){
+fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
     val ingredients by viewModel.ingredients.collectAsStateWithLifecycle()
+    var selectedCategory by remember { mutableStateOf("Vegetables") }
     var selectedIngredient by remember { mutableStateOf<String?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
+    var isMarketExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -62,73 +46,141 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()){
             .padding(16.dp)
     ) {
         Text("Smart Pantry Market", style = MaterialTheme.typography.headlineMedium)
-        Text("Tap an ingredient to quick add", style = MaterialTheme.typography.bodySmall)
 
-        Spacer(modifier = Modifier.height(8.dp))
-        // 1. HORIZONTALNA LISTA SA SLIČICAMA (MARKET)
-        androidx.compose.foundation.lazy.LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(vertical = 8.dp)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // SEARCH BAR
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Search market...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            items(quickIngredients) { name ->
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable() {
-                        selectedIngredient = name
-                    }
-                ) {
-                    androidx.compose.material3.Card(
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        modifier = Modifier.size(65.dp)
-                    ) {
-                        AsyncImage(
-                            model = "https://www.themealdb.com/images/ingredients/$name-Small.png",
-                            contentDescription = name,
-                            modifier = Modifier.fillMaxSize().padding(8.dp)
-                        )
-                    }
-                    Text(name, style = MaterialTheme.typography.labelMedium)
-                }
+
+            // "Lever" ili dugme koje otvara/zatvara market
+            Button(
+                onClick = { isMarketExpanded = !isMarketExpanded },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isMarketExpanded) Color.Gray else Color(0xFFE57373)
+                ),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Text(if (isMarketExpanded) "Close Market" else "Add Items +")
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Current Stock", style = MaterialTheme.typography.titleLarge)
+        // ANIMIRANI DEO - Prikazuje se samo kad je isMarketExpanded true
+        androidx.compose.animation.AnimatedVisibility(
+            visible = isMarketExpanded,
+            enter = androidx.compose.animation.expandVertically(),
+            exit = androidx.compose.animation.shrinkVertically()
+        ) {
+            Column {
+                Spacer(modifier = Modifier.height(16.dp))
 
-        // 2. LISTA NAMIRNICA KOJE SU VEĆ U OSTAVI
+                // KATEGORIJE
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    categories.keys.forEach { category ->
+                        FilterChip(
+                            selected = selectedCategory == category,
+                            onClick = { selectedCategory = category },
+                            label = { Text(category) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(0xFFE57373),
+                                selectedLabelColor = Color.White
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // MREŽA NAMIRNICA
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    val currentList = categories[selectedCategory] ?: emptyList()
+                    val filteredList = currentList.filter { it.contains(searchQuery, ignoreCase = true) }
+
+                    filteredList.forEach { name ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.width(70.dp).clickable { selectedIngredient = name }
+                        ) {
+                            Card(
+                                shape = CircleShape,
+                                modifier = Modifier.size(65.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)), // Svetlo siva pozadina
+                                elevation = CardDefaults.cardElevation(2.dp)
+                            ) {
+                                AsyncImage(
+                                    model = "https://www.themealdb.com/images/ingredients/$name.png",
+                                    contentDescription = name,
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(8.dp),
+                                    error = painterResource(id = android.R.drawable.ic_menu_help), // Upitnik ako nema slike
+                                    placeholder = painterResource(id = android.R.drawable.ic_menu_gallery) // Galerija dok učitava
+                                )
+                            }
+                            Text(name, style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                }
+                Divider(modifier = Modifier.padding(vertical = 16.dp))
+            }
+        }
+
+        // 4. LISTA TRENUTNOG STANJA (Ovo je uvek vidljivo)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("My Current Stock", style = MaterialTheme.typography.titleLarge)
+
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(ingredients) { item ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Mala sličica i u listi za bolji izgled
+                ListItem(
+                    headlineContent = { Text(item.name) },
+                    supportingContent = { Text("${item.quantity} ${item.unit}") },
+                    leadingContent = {
                         AsyncImage(
                             model = "https://www.themealdb.com/images/ingredients/${item.name}-Small.png",
                             contentDescription = null,
-                            modifier = Modifier.size(40.dp).padding(end = 8.dp)
+                            modifier = Modifier.size(40.dp)
                         )
-                        Text("${item.name}: ${item.quantity} ${item.unit}")
+                    },
+                    trailingContent = {
+                        IconButton(onClick = { viewModel.deleteIngredient(item) }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.LightGray)
+                        }
                     }
-                    IconButton(onClick = { viewModel.deleteIngredient(item) }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
-                    }
-                }
-                androidx.compose.material3.HorizontalDivider()
+                )
+                HorizontalDivider()
             }
         }
-    }// 3. PRIKAZ DIALOGA KADA SE KLIKNE NA SLIČICU
+    }
+
+    // DIALOG ZA UNOS (Onaj sa strelicama koji smo napravili)
     selectedIngredient?.let { name ->
         QuickAddDialog(
             ingredientName = name,
             onDismiss = { selectedIngredient = null },
-            onConfirm = { quantityValue, unitValue ->
-                // Ovde prosleđujemo podatke u ViewModel
-                viewModel.addIngredient(name, quantityValue.toDouble(), unitValue)
+            onConfirm = { qty, unit ->
+                viewModel.addIngredient(name, qty.toDouble(), unit)
                 selectedIngredient = null
             }
         )
