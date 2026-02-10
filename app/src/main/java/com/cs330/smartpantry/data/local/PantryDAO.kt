@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.cs330.smartpantry.model.Ingredient
 import com.cs330.smartpantry.model.Recipe
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +18,8 @@ interface PantryDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertIngredient(ingredient: Ingredient)
 
+    @Update
+    suspend fun updateIngredient(ingredient: Ingredient)
     @Delete
     suspend fun deleteIngredient(ingredient: Ingredient)
 

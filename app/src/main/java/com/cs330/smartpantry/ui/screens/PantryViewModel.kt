@@ -2,6 +2,7 @@ package com.cs330.smartpantry.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cs330.smartpantry.data.repository.PantryRepository
 import com.cs330.smartpantry.model.Ingredient
 import com.cs330.smartpantry.model.Recipe
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import retrofit2.http.Query
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,16 +25,16 @@ class PantryViewModel @Inject constructor(
             repository.addIngredient(Ingredient(name = name, quantity = quantity, unit = unit))
         }
     }
+    fun updateIngredient(ingredient: Ingredient, newQuantity: Double, newUnit: String){
+        viewModelScope.launch {
+            val updatedItem = ingredient.copy(quantity = newQuantity, unit = newUnit)
+            repository.update(updatedItem)
+        }
+    }
     fun deleteIngredient(ingredient: Ingredient){
         viewModelScope.launch {
             repository.removeIngredient(ingredient)
         }
     }
-    val favoriteRecipes: StateFlow<List<Recipe>> = repository.favoriteRecipes
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    fun removeFromFavorites(recipe: Recipe) {
-        viewModelScope.launch {
-            repository.removeRecipe(recipe)
-        }
-    }
+
 }

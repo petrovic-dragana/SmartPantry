@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,21 +30,30 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.cs330.smartpantry.data.repository.PantryRepository
+import com.cs330.smartpantry.model.MealDto
 import com.cs330.smartpantry.model.Recipe
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
     onRecipeClick: (String) -> Unit,
-    pantryRecipes: List<Recipe> = emptyList()
+    viewModel: RecipeViewModel = hiltViewModel()
 ) {
+    val pantryRecipes by viewModel.pantryMatchRecipes.collectAsStateWithLifecycle()
+    val categoryRecipes by viewModel.categoryRecipes.collectAsStateWithLifecycle()
+    val selectedCat by viewModel.selectedCategory.collectAsStateWithLifecycle()
+    val favoriteIds by viewModel.favoriteRecipesIds.collectAsState()
+
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -52,6 +62,7 @@ fun HomeScreen(
         item {
             Text("Discover Recipes", style = MaterialTheme.typography.headlineLarge)
         }
+        //1.PANTRY MATCH
         item {
             Column {
                 Row(
@@ -60,6 +71,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("Use What You Have", style = MaterialTheme.typography.titleMedium)
+                    //ovde dodati see all screen
                     TextButton(onClick = { /* Pogledaj sve */ }) {
                         Text("See All", color = Color(0xFFE57373))
                     }
@@ -74,48 +86,52 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(pantryRecipes) { recipe ->
-                            // Manja kartica za horizontalni skrol
                             SmallRecipeCard(recipe, onRecipeClick)
                         }
                     }
                 }
             }
         }
-        // 1. KATEGORIJE (Tvoja prva slika - Grid stil)
+        // 2. KATEGORIJE
         item {
-            Text("Categories", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Primer nekoliko kategorija sa tvoje slike
-                CategoryChip("Pizza", Color(0xFFE57373))
-                CategoryChip("Vegetables", Color.White)
-                CategoryChip("Fruit", Color(0xFFE57373))
-                CategoryChip("Noodles", Color.White)
-                // ... dodaj ostale
-            }
+            CategorySection(
+                selectedCategory = selectedCat,
+                onCategorySelected = { categoryName ->
+                    viewModel.selectCategory(categoryName)}
+            )
         }
 
-        // 2. POPULARNA JELA (Tvoja druga slika - Kartice u koloni)
+        // 3. POPULARNA JELA
         item {
-            Text("Popular Choices", style = MaterialTheme.typography.titleMedium)
+            Text("Popular in $selectedCat", style = MaterialTheme.typography.titleMedium)
         }
 
-        items(listOf("Lasagna", "Pasta", "Salad")) { recipeName ->
+        items(categoryRecipes) { recipe ->
+            val isFav = favoriteIds.contains(recipe.id)
             RecipeCard(
-                name = if (recipeName == "Lasagna") "100-Layer Lasagna" else recipeName,
-                duration = "Under 60 minutes",
-                imageUrl = "https://www.themealdb.com/images/media/meals/xr0n4r1575883077.jpg" // Primer slike
+                name = recipe.title,
+                duration = "Check instructions",
+                imageUrl = recipe.imageUrl,
+                isFavorite = isFav,
+                onFavoriteToggle = {
+                    viewModel.toggleFavorite(MealDto(
+                        idMeal = recipe.id,
+                        strMeal = recipe.title,
+                        strMealThumb = recipe.imageUrl,
+                        strInstructions = recipe.summary
+                    ))
+                },
+                onClick = {onRecipeClick(recipe.id)}
             )
         }
     }
 }
 
 @Composable
-fun SmallRecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
+fun SmallRecipeCard(
+    recipe: Recipe,
+    onClick: (String) -> Unit
+) {
     Card(
         modifier = Modifier
             .width(160.dp)
@@ -145,100 +161,97 @@ fun SmallRecipeCard(recipe: Recipe, onClick: (String) -> Unit) {
         }
     }
 }
-
+val mainCategories = listOf(
+    "Seafood" to "🐟",
+    "Chicken" to "🍗",
+    "Dessert" to "🍰",
+    "Pasta" to "🍝",
+    "Pizza" to "🍕",
+    "Vegetarian" to "🥗"
+)
 @Composable
-fun CategoryChip(name: String, backgroundColor: Color) {
-    Surface(
-        color = backgroundColor,
-        shape = RoundedCornerShape(12.dp),
-        shadowElevation = 2.dp,
-        modifier = Modifier.clickable { /* Filter */ }
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+fun CategorySection(
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit
+) {
+    Column {
+        Text("Categories", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
         ) {
-            // Ovde možeš dodati Icon(...) pre teksta kao na slici
-            Text(
-                text = name,
-                color = if (backgroundColor == Color.White) Color.Black else Color.White,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-}
+            items(mainCategories) { (name, icon) ->
+                val isSelected = name == selectedCategory
 
-@Composable
-fun RecipeCard(name: String, duration: String, imageUrl: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth().height(250.dp),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Box {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-            // Gradijent i tekst preko slike
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(name, color = Color.White, style = MaterialTheme.typography.titleLarge)
-                Text(duration, color = Color.LightGray, style = MaterialTheme.typography.bodySmall)
+                Surface(
+                    modifier = Modifier.clickable { onCategorySelected(name) },
+                    shape = RoundedCornerShape(16.dp),
+                    color = if (isSelected) Color(0xFFE57373) else Color(0xFFF5F5F5),
+                    shadowElevation = if (isSelected) 4.dp else 0.dp
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(icon, modifier = Modifier.padding(end = 8.dp))
+                        Text(
+                            text = name,
+                            color = if (isSelected) Color.White else Color.Black,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
         }
     }
 }
+
 @Composable
 fun RecipeCard(
     name: String,
     duration: String,
     imageUrl: String,
-    isFavorite: Boolean = false, // Dodajemo stanje
-    onFavoriteClick: () -> Unit = {} // Akciju za klik
+    isFavorite: Boolean = false,
+    onFavoriteToggle: () -> Unit,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(250.dp)
-            .padding(vertical = 4.dp), // Mala margina
+            .clickable{onClick()}
+            .padding(vertical = 4.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // SLIKA RECEPTA
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
             AsyncImage(
                 model = imageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
+            Surface (
+                color = Color.Black.copy(alpha = 0.5f),
+                shape = RoundedCornerShape( 16.dp),
+                modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
 
-            // DUGME SRCE (Gornji desni ugao)
-            IconButton(
-                onClick = onFavoriteClick,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-            ) {
+            ){IconButton(onClick = onFavoriteToggle) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "Favorite",
+                    contentDescription = null,
                     tint = if (isFavorite) Color.Red else Color.White
                 )
-            }
+            }  }
 
-            // TEKST PREKO SLIKE (Donji deo sa gradijentom)
             Surface(
-                color = Color.Black.copy(alpha = 0.5f), // Poluprovidna pozadina za tekst
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
+                color = Color.Black.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(bottomStart = 16.dp),
+                modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(name, color = Color.White, style = MaterialTheme.typography.titleLarge)

@@ -27,6 +27,14 @@ class PantryRepository @Inject constructor(
             emptyList()
         }
     }
+    suspend fun searchRecipesByName(name: String): List<MealDto>{
+        return try {
+            val response = mealApi.getMealByName(name)
+            response.meals ?: emptyList()
+        } catch (e: Exception){
+            emptyList()
+        }
+    }
 
     fun getIngredientsFromPantry() = pantryDAO.getAllIngredients()
     suspend fun getMealsByIngredient(ingredient: String): List<Recipe>{
@@ -76,6 +84,28 @@ class PantryRepository @Inject constructor(
 
    suspend fun removeRecipe(recipe: Recipe) {
        pantryDAO.deleteRecipe(recipe)
+    }
+
+    suspend fun getMealsByCategory(category: String): List<Recipe> {
+        return try {
+            val response = mealApi.getRecipesByCategory(category)
+            response.meals?.map { mealDto ->
+                Recipe(
+                    id = mealDto.idMeal,
+                    title = mealDto.strMeal,
+                    imageUrl = mealDto.strMealThumb,
+                    summary = "",
+                    isFavorite = false
+                )
+            } ?: emptyList()
+        }catch (e: Exception){
+            emptyList()
+        }
+    }
+
+    suspend fun update(updatedItem: Ingredient) {
+        pantryDAO.updateIngredient(updatedItem)
+
     }
 
 }

@@ -92,13 +92,10 @@ fun MainScreen() {
     ) { innerPadding ->
         NavHost(navController, startDestination = Screen.Home.route, Modifier.padding(innerPadding)) {
             composable(Screen.Home.route){
-                val recipeViewModel: RecipeViewModel = hiltViewModel()
-                val pantryRecipes by recipeViewModel.pantryMatchRecipes.collectAsStateWithLifecycle()
                 HomeScreen(
                     onRecipeClick = { id ->
                         navController.navigate(Screen.Details.createRoute(id))
-                    },
-                    pantryRecipes = pantryRecipes
+                    }
                 )
             }
             composable(Screen.Pantry.route) { PantryScreen() }
@@ -109,9 +106,8 @@ fun MainScreen() {
                 })
             }
             composable(Screen.Favorite.route) {
-                FavoritesScreen(
-                    onRecipeClick = { mealId ->
-                        navController.navigate("recipe_details/$mealId")
+                FavoritesScreen(onRecipeClick = { mealId ->
+                        navController.navigate(Screen.Details.createRoute(mealId))
                     }
                 )
             }
@@ -120,7 +116,11 @@ fun MainScreen() {
                 arguments = listOf(navArgument("mealId") { type = NavType.StringType })
             ) { backStackEntry ->
                 val mealId = backStackEntry.arguments?.getString("mealId") ?: ""
-                RecipeDetailScreen(mealId = mealId)
+                RecipeDetailScreen(
+                    mealId = mealId,
+                    onBackClick = {
+                        navController.popBackStack()
+                    })
             }
             composable(Screen.About.route) {
                 AboutScreen()

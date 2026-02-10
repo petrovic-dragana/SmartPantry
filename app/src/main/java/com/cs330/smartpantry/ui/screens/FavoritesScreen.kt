@@ -10,23 +10,32 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cs330.smartpantry.model.Recipe
+import com.cs330.smartpantry.model.toBealDto
 import java.nio.file.WatchEvent
 
 @Composable
 fun FavoritesScreen(
-    viewModel: PantryViewModel = hiltViewModel(),
+    viewModel: RecipeViewModel = hiltViewModel(),
     onRecipeClick: (String) -> Unit
 )
 {
@@ -48,19 +57,33 @@ fun FavoritesScreen(
         }
         else{
             LazyColumn {
-                items(favorites){ recipe ->
-                    FavoritesRecipeItem(recipe, onRecipeClick) }
+                items(favorites, key = { it.id }) { recipe -> // Dodaj key radi boljih performansi
+                    FavoritesRecipeItem(
+                        recipe = recipe,
+                        onRecipeClick = {
+                            println("Is it clicked ${recipe.id}")
+                            onRecipeClick(recipe.id)
+                        },
+                        onRemove = { viewModel.toggleFavorite(recipe.toBealDto()) }
+                    )
+                }
             }
         }
     }
 }
 @Composable
-fun FavoritesRecipeItem(recipe: Recipe, onRecipeClick: (String) -> Unit){
+fun FavoritesRecipeItem(
+    recipe: Recipe,
+    onRecipeClick: () -> Unit,
+    onRemove: () -> Unit
+){
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable{onRecipeClick(recipe.id)}
+            .clickable{onRecipeClick()},
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row (
             verticalAlignment = Alignment.CenterVertically
@@ -68,13 +91,24 @@ fun FavoritesRecipeItem(recipe: Recipe, onRecipeClick: (String) -> Unit){
             AsyncImage(
                 model = recipe.imageUrl,
                 contentDescription = null,
-                modifier = Modifier.size(100.dp)
+                modifier = Modifier.size(100.dp),
+                contentScale = ContentScale.Crop
             )
             Text(
                 text = recipe.title,
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.titleMedium
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f),
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2
             )
+            IconButton(onClick = onRemove) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Remove from favorites",
+                    tint = Color.Red
+                )
+            }
         }
     }
 }

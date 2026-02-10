@@ -21,5 +21,5 @@ sealed class Screen (val route: String, val title: String, val icon: ImageVector
     object Details : Screen("details/{mealId}", "Details", Icons.Default.Info){
         fun createRoute(mealId: String ) = "details/$mealId"
     }
-    object About : Screen("about", "About", Icons.Default.Person)
+    object About : Screen("about", "About", Icons.Default.Info)
 }

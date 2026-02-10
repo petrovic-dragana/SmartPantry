@@ -11,3 +11,9 @@ data class Recipe(
     val summary: String,
     val isFavorite: Boolean = false
 )
+fun Recipe.toBealDto() = MealDto(
+    idMeal = this.id,
+    strMeal = this.title,
+    strMealThumb = this.imageUrl,
+    strInstructions = this.summary
+)

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.cs330.smartpantry.model.Ingredient
 
 // 1. MAPE NAMIRNICA (Van Composable-a)
 val categories = mapOf(
@@ -39,7 +40,7 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
     var selectedIngredient by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
     var isMarketExpanded by remember { mutableStateOf(false) }
-
+    var itemToEdit by remember { mutableStateOf<Ingredient?>(null) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -55,7 +56,7 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
             onValueChange = { searchQuery = it },
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("Search market...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            trailingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             shape = RoundedCornerShape(12.dp)
         )
 
@@ -67,7 +68,6 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // "Lever" ili dugme koje otvara/zatvara market
             Button(
                 onClick = { isMarketExpanded = !isMarketExpanded },
                 colors = ButtonDefaults.buttonColors(
@@ -146,14 +146,14 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
                 Divider(modifier = Modifier.padding(vertical = 16.dp))
             }
         }
-
-        // 4. LISTA TRENUTNOG STANJA (Ovo je uvek vidljivo)
+        //LISTA TRENUTNOG STANJA
         Spacer(modifier = Modifier.height(16.dp))
         Text("My Current Stock", style = MaterialTheme.typography.titleLarge)
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(ingredients) { item ->
                 ListItem(
+                    modifier = Modifier.clickable{itemToEdit = item},
                     headlineContent = { Text(item.name) },
                     supportingContent = { Text("${item.quantity} ${item.unit}") },
                     leadingContent = {
@@ -174,10 +174,11 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
         }
     }
 
-    // DIALOG ZA UNOS (Onaj sa strelicama koji smo napravili)
+    // DIALOG ZA UNOS
     selectedIngredient?.let { name ->
         QuickAddDialog(
             ingredientName = name,
+            themeColor = Color(0xFFE57373),
             onDismiss = { selectedIngredient = null },
             onConfirm = { qty, unit ->
                 viewModel.addIngredient(name, qty.toDouble(), unit)
@@ -185,11 +186,29 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
             }
         )
     }
+    //DIALOG ZA IZMENU
+    itemToEdit?.let { item ->
+        QuickAddDialog(
+            ingredientName = item.name,
+            initialQuantity = item.quantity.toInt(),
+            initialUnit = item.unit,
+            themeColor = Color(0xFFE57373),
+            onDismiss = { itemToEdit = null },
+            onConfirm = { qty, unit ->
+                viewModel.updateIngredient(item, qty.toDouble(), unit)
+                itemToEdit = null
+            }
+        )
+
+    }
 }
 
 @Composable
 fun QuickAddDialog(
     ingredientName: String,
+    initialQuantity: Int = 1,
+    initialUnit:String = "pcs",
+    themeColor: Color = MaterialTheme.colorScheme.primary,
     onDismiss: () -> Unit,
     onConfirm: (Int, String) -> Unit
 ) {
@@ -220,28 +239,26 @@ fun QuickAddDialog(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.padding(vertical = 16.dp)
                 ) {
-                    // Strelica DOLE
-                    IconButton(onClick = {
-                        if (quantity > 0) quantity--
-                    }) {
-                        Icon(painter = painterResource(id = android.R.drawable.arrow_down_float), contentDescription = "Down")
+                    IconButton(onClick = { if (quantity > 0) quantity-- }) {
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.arrow_down_float),
+                            contentDescription = "Down",
+                            tint = themeColor
+                        )
                     }
-
-                    // Prikaz broja
                     Text(
                         text = quantity.toString(),
                         style = MaterialTheme.typography.displaySmall,
                         modifier = Modifier.padding(horizontal = 24.dp)
                     )
-
-                    // Strelica GORE
-                    IconButton(onClick = {
-                        if (quantity < 50) quantity++
-                    }) {
-                        Icon(painter = painterResource(id = android.R.drawable.arrow_up_float), contentDescription = "Up")
+                    IconButton(onClick = { if (quantity < 50) quantity++ }) {
+                        Icon(
+                            painter = painterResource(id = android.R.drawable.arrow_up_float),
+                            contentDescription = "Up",
+                            tint = themeColor
+                        )
                     }
                 }
-
                 if (showError) {
                     Text(
                         text = "Quantity must be greater than 0!",
@@ -259,7 +276,11 @@ fun QuickAddDialog(
                             selected = (selectedUnit == unit),
                             onClick = { selectedUnit = unit },
                             label = { Text(unit) },
-                            modifier = Modifier.padding(horizontal = 2.dp)
+                            modifier = Modifier.padding(horizontal = 2.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = themeColor,
+                                selectedLabelColor = Color.White
+                            )
                         )
                     }
                 }
@@ -273,10 +294,11 @@ fun QuickAddDialog(
                 } else {
                     showError = true
                 }
-            }) { Text("Confirm") }
+            }, colors = ButtonDefaults.buttonColors(containerColor = themeColor)
+                ) { Text("Confirm") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text("Cancel", color = themeColor) }
         }
     )
 }
