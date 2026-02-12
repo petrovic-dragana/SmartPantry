@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cs330.smartpantry.data.remote.MealApi
+import com.cs330.smartpantry.data.repository.CustomRecipeRepository
 import com.cs330.smartpantry.data.repository.PantryRepository
 import com.cs330.smartpantry.model.MealDto
 import com.cs330.smartpantry.model.Recipe
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -29,11 +31,12 @@ import javax.inject.Inject
 @HiltViewModel
 class RecipeViewModel @Inject constructor(
     private val repository: PantryRepository,
-    private val mealApi: MealApi
+    private val mealApi: MealApi,
+    private val customRepository: CustomRecipeRepository
 ) : ViewModel(){
+
     private val _recipes = MutableStateFlow<List<MealDto>>(emptyList())
     val recipes: StateFlow<List<MealDto>> = _recipes
-
 
     fun searchByIngredient(ingredient: String){
         viewModelScope.launch {
@@ -54,12 +57,12 @@ class RecipeViewModel @Inject constructor(
 
     private val _selectedRecipe = MutableStateFlow<MealDto?>(null)
     val selectedRecipe: StateFlow<MealDto?> = _selectedRecipe
-    fun getRecipeDetails(id: String){
-        viewModelScope.launch {
-            val response = mealApi.getFullRecipeDetails(id)
-            _selectedRecipe.value = response.meals?.firstOrNull()
-        }
-    }
+//    fun getRecipeDetails(id: String){
+//        viewModelScope.launch {
+//            val response = mealApi.getFullRecipeDetails(id)
+//            _selectedRecipe.value = response.meals?.firstOrNull()
+//        }
+//    }
 
     fun isCurrentRecipeFavorite(id: String) = repository.isRecipeFavorite(id)
 
@@ -75,7 +78,7 @@ class RecipeViewModel @Inject constructor(
                 val recipe = Recipe(
                     id = meal.idMeal,
                     title = meal.strMeal,
-                    imageUrl = meal.strMealThumb,
+                    imageUrl = meal.strMealThumb ?: "",
                     summary = meal.strInstructions ?: ""
 
                 )
@@ -156,6 +159,62 @@ class RecipeViewModel @Inject constructor(
             val result = repository.searchRecipesByName(query)
             _recipes.value = result
             _isLoading.value = false
+        }
+    }
+    fun getRecipeDetails(id: String) {
+        viewModelScope.launch {
+            try {
+                val response = mealApi.getFullRecipeDetails(id)
+                val apiMeal = response.meals?.firstOrNull()
+
+                if (apiMeal != null) {
+                    _selectedRecipe.value = apiMeal
+                } else {
+                    loadCustomRecipeAsMealDto(id)
+                }
+            } catch (e: Exception) {
+                loadCustomRecipeAsMealDto(id)
+            }
+        }
+    }
+
+    private suspend fun loadCustomRecipeAsMealDto(id: String) {
+        // Uzimamo listu iz Flow-a i tražimo recept
+//        val customRecipe = customRepository.getAllCustomRecipes().first().find { it.id == id }
+        val recipes = customRepository.getAllCustomRecipes().firstOrNull() ?: emptyList()
+        val customRecipe = recipes.find { it.id == id }
+
+        if (customRecipe != null) {
+            val ingredientsList = customRecipe.ingredients?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
+
+            _selectedRecipe.value = MealDto(
+                idMeal = customRecipe.id ?: "",
+                strMeal = customRecipe.title ?: "",
+                strInstructions = customRecipe.instructions ?: "",
+                strMealThumb = customRecipe.imageUrl,
+
+                strIngredient1 = ingredientsList.getOrNull(0) ?: "",
+                strIngredient2 = ingredientsList.getOrNull(1) ?: "",
+                strIngredient3 = ingredientsList.getOrNull(2) ?: "",
+                strIngredient4 = ingredientsList.getOrNull(3) ?: "",
+                strIngredient5 = ingredientsList.getOrNull(4) ?: "",
+                strIngredient6 = ingredientsList.getOrNull(5) ?: "",
+                strIngredient7 = ingredientsList.getOrNull(6) ?: "",
+                strIngredient8 = ingredientsList.getOrNull(7) ?: "",
+                strIngredient9 = ingredientsList.getOrNull(8) ?: "",
+                strIngredient10 = ingredientsList.getOrNull(9) ?: "",
+
+                strMeasure1 = if (ingredientsList.getOrNull(0) != null) "Personal choice" else "",
+                strMeasure2 = if (ingredientsList.getOrNull(1) != null) "Personal choice" else "",
+                strMeasure3 = if (ingredientsList.getOrNull(2) != null) "Personal choice" else "",
+                strMeasure4 = if (ingredientsList.getOrNull(3) != null) "Personal choice" else "",
+                strMeasure5 = if (ingredientsList.getOrNull(4) != null) "Personal choice" else "",
+                strMeasure6 = if (ingredientsList.getOrNull(5) != null) "Personal choice" else "",
+                strMeasure7 = if (ingredientsList.getOrNull(6) != null) "Personal choice" else "",
+                strMeasure8 = if (ingredientsList.getOrNull(7) != null) "Personal choice" else "",
+                strMeasure9 = if (ingredientsList.getOrNull(8) != null) "Personal choice" else "",
+                strMeasure10 = if (ingredientsList.getOrNull(9) != null) "Personal choice" else ""
+            )
         }
     }
 

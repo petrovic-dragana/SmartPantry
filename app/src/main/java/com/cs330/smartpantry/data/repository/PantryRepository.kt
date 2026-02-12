@@ -44,7 +44,7 @@ class PantryRepository @Inject constructor(
                 Recipe(
                     id = mealDto.idMeal,
                     title = mealDto.strMeal,
-                    imageUrl = mealDto.strMealThumb,
+                    imageUrl = mealDto.strMealThumb ?: "",
                     summary = "",
                     isFavorite = false
                 )
@@ -78,6 +78,7 @@ class PantryRepository @Inject constructor(
         pantryDAO.insertRecipe(recipe)
     }
 
+
     suspend fun deleteRecipeById(id: String) {
         pantryDAO.deleteRecipeById(id)
     }
@@ -93,7 +94,7 @@ class PantryRepository @Inject constructor(
                 Recipe(
                     id = mealDto.idMeal,
                     title = mealDto.strMeal,
-                    imageUrl = mealDto.strMealThumb,
+                    imageUrl = mealDto.strMealThumb ?: "",
                     summary = "",
                     isFavorite = false
                 )

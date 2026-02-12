@@ -3,6 +3,7 @@ package com.cs330.smartpantry.ui.screens
 import android.graphics.drawable.Icon
 import android.icu.text.CaseMap.Title
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
@@ -21,5 +22,6 @@ sealed class Screen (val route: String, val title: String, val icon: ImageVector
     object Details : Screen("details/{mealId}", "Details", Icons.Default.Info){
         fun createRoute(mealId: String ) = "details/$mealId"
     }
+    object MyRecipes : Screen("myrecipe", "My Recipe", Icons.Default.EditNote)
     object About : Screen("about", "About", Icons.Default.Info)
 }

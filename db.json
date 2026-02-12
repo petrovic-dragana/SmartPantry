@@ -1,0 +1,18 @@
+{
+  "custom-recipes": [
+    {
+      "id": "1",
+      "imageUrl": "content://media/picker_get_content/0/com.android.providers.media.photopicker/media/1000000033",
+      "ingredients": "3 eggs, 1 cup sugar, 2 cups flour",
+      "instructions": "Peci 20 minuta.",
+      "title": "Bakin Kolac"
+    },
+    {
+      "id": "m0f3mKK",
+      "imageUrl": "content://media/picker_get_content/0/com.android.providers.media.photopicker/media/1000000034",
+      "ingredients": "egg 3, apple 4, flour 2 cups, oil 2 tsp",
+      "instructions": "Pomesati sve dobro I peci na 180 stepeni 20 min.",
+      "title": "Jos jedan kolac"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ data class MealResponse (
 data class MealDto(
     val idMeal: String,
     val strMeal: String,
-    val strMealThumb: String,
+    val strMealThumb: String?,
     val strInstructions: String,
     // Sastojci
     val strIngredient1: String? = null, val strIngredient2: String? = null,
@@ -55,7 +55,7 @@ fun MealDto.toRecipe(): Recipe {
     return Recipe(
         id = idMeal,
         title = strMeal,
-        imageUrl = strMealThumb,
+        imageUrl = strMealThumb ?: "",
         summary = strInstructions ?: "",
     )
 }

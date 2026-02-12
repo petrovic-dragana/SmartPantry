@@ -29,6 +29,7 @@ import androidx.navigation.navArgument
 import com.cs330.smartpantry.ui.screens.AboutScreen
 import com.cs330.smartpantry.ui.screens.FavoritesScreen
 import com.cs330.smartpantry.ui.screens.HomeScreen
+import com.cs330.smartpantry.ui.screens.MyRecipesScreen
 import com.cs330.smartpantry.ui.screens.PantryScreen
 import com.cs330.smartpantry.ui.screens.RecipeDetailScreen
 import com.cs330.smartpantry.ui.screens.RecipeScreen
@@ -48,8 +49,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ){
-                    //PantryScreen()
-                   // RecipeScreen()
                     MainScreen()
                 }
             }
@@ -71,6 +70,7 @@ fun MainScreen() {
                     Screen.Pantry,
                     Screen.Recipes,
                     Screen.Favorite,
+                    Screen.MyRecipes,
                     Screen.About)
 
                 items.forEach { screen ->
@@ -110,6 +110,9 @@ fun MainScreen() {
                         navController.navigate(Screen.Details.createRoute(mealId))
                     }
                 )
+            }
+            composable(Screen.MyRecipes.route){
+                MyRecipesScreen(navController = navController)
             }
             composable(
                 route = Screen.Details.route,
