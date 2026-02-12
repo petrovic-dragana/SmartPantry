@@ -88,6 +88,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
 
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
 kapt{
     correctErrorTypes = true

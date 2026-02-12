@@ -73,7 +73,7 @@ fun HomeScreen(
                     Text("Use What You Have", style = MaterialTheme.typography.titleMedium)
                     //ovde dodati see all screen
                     TextButton(onClick = { /* Pogledaj sve */ }) {
-                        Text("See All", color = Color(0xFFE57373))
+                        Text("See All", color = Color(0xFF90BA77))
                     }
                 }
 
@@ -188,7 +188,7 @@ fun CategorySection(
                 Surface(
                     modifier = Modifier.clickable { onCategorySelected(name) },
                     shape = RoundedCornerShape(16.dp),
-                    color = if (isSelected) Color(0xFFE57373) else Color(0xFFF5F5F5),
+                    color = if (isSelected) Color(0xFF90BA77) else Color(0xFFF5F5F5),
                     shadowElevation = if (isSelected) 4.dp else 0.dp
                 ) {
                     Row(
