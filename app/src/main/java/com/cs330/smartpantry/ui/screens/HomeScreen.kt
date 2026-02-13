@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +31,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cs330.smartpantry.model.MealDto
 import com.cs330.smartpantry.model.Recipe
+import com.cs330.smartpantry.ui.viewmodel.RecipeViewModel
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -54,6 +57,7 @@ fun HomeScreen(
     val selectedCat by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val favoriteIds by viewModel.favoriteRecipesIds.collectAsState()
 
+    var isPantryExpanded by remember { mutableStateOf(false) }
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -62,7 +66,7 @@ fun HomeScreen(
         item {
             Text("Discover Recipes", style = MaterialTheme.typography.headlineLarge)
         }
-        //1.PANTRY MATCH
+        // 1. PANTRY MATCH
         item {
             Column {
                 Row(
@@ -71,22 +75,51 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("Use What You Have", style = MaterialTheme.typography.titleMedium)
-                    //ovde dodati see all screen
-                    TextButton(onClick = { /* Pogledaj sve */ }) {
-                        Text("See All", color = Color(0xFF90BA77))
+                    TextButton(onClick = { isPantryExpanded = !isPantryExpanded }) {
+                        Text(
+                            text = if (isPantryExpanded) "Show Less" else "See All",
+                            color = Color(0xFF77B23F) // Tvoja zelena jabuka boja
+                        )
                     }
                 }
 
                 if (pantryRecipes.isEmpty()) {
-                    Text("Add items to your pantry to see magic!",
+                    Text(
+                        "Add items to your pantry to see magic!",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray)
+                        color = Color.Gray
+                    )
                 } else {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(pantryRecipes) { recipe ->
-                            SmallRecipeCard(recipe, onRecipeClick)
+                    if (isPantryExpanded) {
+                        // VERTIKALNI PRIKAZ
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            pantryRecipes.forEach { recipe ->
+                                val isFav = favoriteIds.contains(recipe.id)
+                                RecipeCard(
+                                    name = recipe.title,
+                                    duration = "Perfect Match",
+                                    imageUrl = recipe.imageUrl,
+                                    isFavorite = isFav,
+                                    onFavoriteToggle = {
+                                        viewModel.toggleFavorite(MealDto(
+                                            idMeal = recipe.id,
+                                            strMeal = recipe.title,
+                                            strMealThumb = recipe.imageUrl,
+                                            strInstructions = recipe.summary
+                                        ))
+                                    },
+                                    onClick = { onRecipeClick(recipe.id) }
+                                )
+                            }
+                        }
+                    } else {
+                        // HORIZONTALNI PRIKAZ
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(pantryRecipes) { recipe ->
+                                SmallRecipeCard(recipe, onRecipeClick)
+                            }
                         }
                     }
                 }
@@ -188,7 +221,7 @@ fun CategorySection(
                 Surface(
                     modifier = Modifier.clickable { onCategorySelected(name) },
                     shape = RoundedCornerShape(16.dp),
-                    color = if (isSelected) Color(0xFF90BA77) else Color(0xFFF5F5F5),
+                    color = if (isSelected) Color(0xFF1F731B) else Color(0xFFF5F5F5),
                     shadowElevation = if (isSelected) 4.dp else 0.dp
                 ) {
                     Row(

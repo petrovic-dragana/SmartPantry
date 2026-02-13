@@ -15,11 +15,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -54,6 +56,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.cs330.smartpantry.model.CustomRecipe
+import com.cs330.smartpantry.ui.navigation.Screen
+import com.cs330.smartpantry.ui.viewmodel.CustomRecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +75,7 @@ fun MyRecipesScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {showAddDialog = true},
-                containerColor = Color(0xFFE57373),
+                containerColor = Color(0xFF1F731B),
                 contentColor = Color.White
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Recipe")
@@ -84,16 +88,29 @@ fun MyRecipesScreen(
                 .padding(padding)
                 .padding(16.dp)
         ){
-            Text(
-                text = "My Custom Recipes",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Manage your private recipes on the local server",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = { navController.popBackStack() }
+                ) {
+                    Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back", tint = Color.Gray)
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(
+                        text = "My Custom Recipes",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Manage your private recipes",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
             if (recipes.isEmpty()) {
@@ -195,6 +212,7 @@ fun RecipeFormDialog(
     var instructions by remember { mutableStateOf(initialRecipe?.instructions ?: "") }
     var imageUri by remember { mutableStateOf<Uri?>(initialRecipe?.imageUrl?.let { Uri.parse(it) }) }
 
+    var showError by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -226,7 +244,7 @@ fun RecipeFormDialog(
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
-                            .data(imageUri ?: "https://via.placeholder.com/150") // Default slika ako nema URI-ja
+                            .data(imageUri ?: "https://via.placeholder.com/150")
                             .crossfade(true)
                             .build(),
                         contentDescription = "Recipe Image",
@@ -238,15 +256,48 @@ fun RecipeFormDialog(
                     }
                 }
 
-                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Title") })
-                OutlinedTextField(value = ingredients, onValueChange = { ingredients = it }, label = { Text("Ingredients") })
-                OutlinedTextField(value = instructions, onValueChange = { instructions = it }, label = { Text("Instruction") })
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it; showError = false },
+                    label = { Text("Title") },
+                    isError = showError && title.isBlank(),
+                    modifier = Modifier.fillMaxWidth())
+
+                OutlinedTextField(
+                    value = ingredients,
+                    onValueChange = { ingredients = it; showError = false },
+                    label = { Text("Ingredients") },
+                    isError = showError && ingredients.isBlank(),
+                    modifier = Modifier.fillMaxWidth())
+
+                OutlinedTextField(
+                    value = instructions,
+                    onValueChange = { instructions = it; showError = false },
+                    label = { Text("Instruction") },
+                    isError = showError && instructions.isBlank(),
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3
+                )
+                if (showError){
+                    Text(
+                        text = "All fields must be filled!",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
             }
         },
         confirmButton = {
             Button(
-                onClick = { onConfirm(title, ingredients, instructions, imageUri?.toString()) },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE57373))
+                onClick = {
+                    if (title.isNotBlank() && ingredients.isNotBlank() && instructions.isNotBlank()) {
+                    onConfirm(title, ingredients, instructions, imageUri?.toString())
+                } else {
+                    showError = true // Prikazujemo grešku ako nešto fali
+                }
+                          },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1F731B))
             ) { Text("Save") }
         },
         dismissButton = {
@@ -276,7 +327,7 @@ fun RecipeDetailsDialog(recipe: CustomRecipe, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close", color = Color(0xFFE57373)) }
+            TextButton(onClick = onDismiss) { Text("Close", color = Color(0xFF1F731B)) }
         }
     )
 }

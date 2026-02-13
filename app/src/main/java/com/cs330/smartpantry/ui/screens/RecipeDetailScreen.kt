@@ -1,11 +1,9 @@
 package com.cs330.smartpantry.ui.screens
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -21,9 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -32,10 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.cs330.smartpantry.ui.viewmodel.RecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,7 +97,7 @@ fun RecipeDetailScreen(
                     Text(
                         "Ingredients",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFFE57373),
+                        color = Color(0xFF1F731B),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
 
@@ -123,7 +119,7 @@ fun RecipeDetailScreen(
                     Text(
                         "Instructions",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFFE57373),
+                        color = Color(0xFF1F731B),
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                     Text(recipe.strInstructions ?: "No instruction",

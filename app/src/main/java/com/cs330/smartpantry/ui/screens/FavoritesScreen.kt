@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,15 +29,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.cs330.smartpantry.model.Recipe
 import com.cs330.smartpantry.model.toBealDto
-import java.nio.file.WatchEvent
+import com.cs330.smartpantry.ui.viewmodel.RecipeViewModel
 
 @Composable
 fun FavoritesScreen(
     viewModel: RecipeViewModel = hiltViewModel(),
-    onRecipeClick: (String) -> Unit
+    onRecipeClick: (String) -> Unit,
+    navController: NavController
 )
 {
     val favorites by viewModel.favoriteRecipes.collectAsStateWithLifecycle()
@@ -45,11 +48,21 @@ fun FavoritesScreen(
         .fillMaxSize()
         .padding(16.dp))
     {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            IconButton(
+                onClick = { navController.popBackStack() }
+            ) {
+                Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back", tint = Color.Gray)
+            }
         Text(
             text = "My Favorite Recipes",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(16.dp)
         )
+        }
         if (favorites.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
                 Text("No favorites yet. Start liking some recipes!")

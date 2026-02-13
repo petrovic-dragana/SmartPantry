@@ -1,4 +1,4 @@
-package com.cs330.smartpantry.ui.screens
+package com.cs330.smartpantry.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

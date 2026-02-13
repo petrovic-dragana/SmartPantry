@@ -17,8 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -32,10 +30,10 @@ import com.cs330.smartpantry.ui.screens.FavoritesScreen
 import com.cs330.smartpantry.ui.screens.HomeScreen
 import com.cs330.smartpantry.ui.screens.MyRecipesScreen
 import com.cs330.smartpantry.ui.screens.PantryScreen
+import com.cs330.smartpantry.ui.screens.ProfileScreen
 import com.cs330.smartpantry.ui.screens.RecipeDetailScreen
 import com.cs330.smartpantry.ui.screens.RecipeScreen
-import com.cs330.smartpantry.ui.screens.RecipeViewModel
-import com.cs330.smartpantry.ui.screens.Screen
+import com.cs330.smartpantry.ui.navigation.Screen
 import com.cs330.smartpantry.ui.theme.SmartPantryTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -72,9 +70,8 @@ fun MainScreen() {
                     Screen.Home,
                     Screen.Pantry,
                     Screen.Recipes,
-                    Screen.Favorite,
-                    Screen.MyRecipes,
-                    Screen.About)
+                    Screen.Profile,
+                    )
 
                 items.forEach { screen ->
                     NavigationBarItem(
@@ -111,7 +108,7 @@ fun MainScreen() {
             composable(Screen.Favorite.route) {
                 FavoritesScreen(onRecipeClick = { mealId ->
                         navController.navigate(Screen.Details.createRoute(mealId))
-                    }
+                    }, navController = navController
                 )
             }
             composable(Screen.MyRecipes.route){
@@ -128,8 +125,11 @@ fun MainScreen() {
                         navController.popBackStack()
                     })
             }
+            composable(Screen.Profile.route) {
+                ProfileScreen(navController = navController)
+            }
             composable(Screen.About.route) {
-                AboutScreen()
+                AboutScreen(navController = navController)
             }
         }
     }

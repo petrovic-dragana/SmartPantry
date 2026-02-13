@@ -3,12 +3,10 @@ package com.cs330.smartpantry.ui.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -22,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.cs330.smartpantry.model.Ingredient
+import com.cs330.smartpantry.ui.viewmodel.PantryViewModel
 
 // 1. MAPE NAMIRNICA (Van Composable-a)
 val categories = mapOf(
@@ -71,7 +70,7 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
             Button(
                 onClick = { isMarketExpanded = !isMarketExpanded },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isMarketExpanded) Color.Gray else Color(0xFFE57373)
+                    containerColor = if (isMarketExpanded) Color.Gray else Color(0xFF1F731B)
                 ),
                 shape = RoundedCornerShape(20.dp)
             ) {
@@ -99,7 +98,7 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
                             onClick = { selectedCategory = category },
                             label = { Text(category) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFFE57373),
+                                selectedContainerColor = Color(0xFF1F731B),
                                 selectedLabelColor = Color.White
                             )
                         )
@@ -135,7 +134,7 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .padding(8.dp),
-                                    error = painterResource(id = android.R.drawable.ic_menu_help), // Upitnik ako nema slike
+                                    error = painterResource(id = android.R.drawable.ic_menu_help),
                                     placeholder = painterResource(id = android.R.drawable.ic_menu_gallery) // Galerija dok učitava
                                 )
                             }
@@ -178,7 +177,7 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
     selectedIngredient?.let { name ->
         QuickAddDialog(
             ingredientName = name,
-            themeColor = Color(0xFFE57373),
+            themeColor = Color(0xFF1F731B),
             onDismiss = { selectedIngredient = null },
             onConfirm = { qty, unit ->
                 viewModel.addIngredient(name, qty.toDouble(), unit)
@@ -190,9 +189,9 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
     itemToEdit?.let { item ->
         QuickAddDialog(
             ingredientName = item.name,
-            initialQuantity = item.quantity.toInt(),
+            initialQuantity = item.quantity.toDouble(),
             initialUnit = item.unit,
-            themeColor = Color(0xFFE57373),
+            themeColor = Color(0xFF1F731B),
             onDismiss = { itemToEdit = null },
             onConfirm = { qty, unit ->
                 viewModel.updateIngredient(item, qty.toDouble(), unit)
@@ -206,16 +205,22 @@ fun PantryScreen(viewModel: PantryViewModel = hiltViewModel()) {
 @Composable
 fun QuickAddDialog(
     ingredientName: String,
-    initialQuantity: Int = 1,
-    initialUnit:String = "pcs",
-    themeColor: Color = MaterialTheme.colorScheme.primary,
+    initialQuantity: Double = 1.0,
+    initialUnit: String = "pcs",
+    themeColor: Color = Color(0xFF1F731B),
+    //Color = MaterialTheme.colorScheme.primary,
     onDismiss: () -> Unit,
-    onConfirm: (Int, String) -> Unit
+    onConfirm: (Double, String) -> Unit
 ) {
-    var quantity by remember { mutableStateOf(1) }
+    var quantity by remember { mutableStateOf(initialQuantity) }
     val units = listOf("pcs", "kg", "g", "l", "ml")
     var selectedUnit by remember { mutableStateOf(units[0]) }
 
+    val step = when(selectedUnit){
+        "g", "ml" -> 50.0
+        "kg", "l" -> 0.25
+        else -> 1.0
+    }
     var showError by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -234,24 +239,45 @@ fun QuickAddDialog(
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Text("Select Quantity", style = MaterialTheme.typography.labelLarge)
 
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    units.forEach { unit ->
+                        FilterChip(
+                            selected = (selectedUnit == unit),
+                            onClick = {
+                                selectedUnit = unit
+                                // Resetujemo količinu na razumnu početnu vrednost za tu jedinicu
+                                quantity = if(unit == "g") 100.0 else if(unit == "kg") 1.0 else 1.0
+                            },
+                            label = { Text(unit) },
+                            modifier = Modifier.padding(horizontal = 2.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = themeColor,
+                                selectedLabelColor = Color.White
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.padding(vertical = 16.dp)
                 ) {
-                    IconButton(onClick = { if (quantity > 0) quantity-- }) {
+                    IconButton(onClick = { if (quantity > 0) quantity-=step }) {
                         Icon(
                             painter = painterResource(id = android.R.drawable.arrow_down_float),
                             contentDescription = "Down",
                             tint = themeColor
                         )
                     }
+                    val displayText = if (quantity % 1.0 == 0.0) quantity.toInt().toString() else quantity.toString()
                     Text(
-                        text = quantity.toString(),
+                        text = displayText,
                         style = MaterialTheme.typography.displaySmall,
                         modifier = Modifier.padding(horizontal = 24.dp)
                     )
-                    IconButton(onClick = { if (quantity < 50) quantity++ }) {
+                    IconButton(onClick = { if (quantity < 5000) quantity+=step}) {
                         Icon(
                             painter = painterResource(id = android.R.drawable.arrow_up_float),
                             contentDescription = "Up",
@@ -265,24 +291,6 @@ fun QuickAddDialog(
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Izbor jedinica
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    units.forEach { unit ->
-                        FilterChip(
-                            selected = (selectedUnit == unit),
-                            onClick = { selectedUnit = unit },
-                            label = { Text(unit) },
-                            modifier = Modifier.padding(horizontal = 2.dp),
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = themeColor,
-                                selectedLabelColor = Color.White
-                            )
-                        )
-                    }
                 }
             }
         },

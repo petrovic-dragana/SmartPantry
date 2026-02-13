@@ -13,23 +13,42 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 @Composable
-fun AboutScreen (){
+fun AboutScreen (
+    navController: NavController
+){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        IconButton(
+            onClick = {
+                navController.popBackStack()
+            }
+        ) {
+            Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back", tint = Color.Gray)
+        }
+    }
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -41,14 +60,15 @@ fun AboutScreen (){
         Surface (
             modifier = Modifier.size(100.dp),
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer
+            color = Color(0xFF90BA77)
         ){
             Box(contentAlignment = Alignment.Center){
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = null,
                     modifier = Modifier.size(50.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    Color(0xFF1F731B)
+
                 )
             }
         }
@@ -56,7 +76,7 @@ fun AboutScreen (){
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Smart Pantry App",
+            text = "Bite Logic App",
             style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -64,12 +84,16 @@ fun AboutScreen (){
         Text(
             text = "v1.0.0",
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary
+            color = Color(0xFF1F731B)
+
         )
 
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Your intelligent kitchen assistant. Manage your food inventory and discover new recipes based on the ingredients you already have.",
+            text = "Welcome to BiteLogic.\n" +
+                    "Add what you have.\n" +
+                    "Discover what you can cook.\n" +
+                    "Save what you love.",
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(horizontal = 8.dp),
@@ -103,6 +127,7 @@ fun AboutScreen (){
         }
     }
 }
+
 @Composable
 fun InfoRow(label: String, value: String) {
     Row(

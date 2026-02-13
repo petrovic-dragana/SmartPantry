@@ -1,17 +1,14 @@
-package com.cs330.smartpantry.ui.screens
+package com.cs330.smartpantry.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cs330.smartpantry.data.repository.PantryRepository
 import com.cs330.smartpantry.model.Ingredient
-import com.cs330.smartpantry.model.Recipe
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import retrofit2.http.Query
 import javax.inject.Inject
 
 @HiltViewModel

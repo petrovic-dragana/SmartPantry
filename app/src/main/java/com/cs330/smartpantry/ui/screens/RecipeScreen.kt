@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,7 +17,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.cs330.smartpantry.model.MealDto
+import com.cs330.smartpantry.ui.viewmodel.RecipeViewModel
 
 @Composable
 fun RecipeScreen(
@@ -91,7 +90,7 @@ fun RecipeScreen(
                 onClick = { searchByName = true },
                 label = { Text("Name") },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Color(0xFFE57373),
+                    selectedContainerColor = Color(0xFF1F731B),
                     selectedLabelColor = Color.White,
                     selectedLeadingIconColor = Color.White
                 ),
@@ -105,7 +104,7 @@ fun RecipeScreen(
                 onClick = { searchByName = false },
                 label = { Text("Ingredient") },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Color(0xFFE57373),
+                    selectedContainerColor = Color(0xFF1F731B),
                     selectedLeadingIconColor = Color.White,
                     selectedLabelColor = Color.White
                 ),
